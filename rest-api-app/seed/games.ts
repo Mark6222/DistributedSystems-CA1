@@ -1,4 +1,5 @@
 import {Game} from '../shared/types'
+import { GameCompany } from '../shared/types';
 
 export const games : Game[] = [
   {
@@ -42,5 +43,43 @@ export const games : Game[] = [
     releaseYear: 2020,
     genre: "Action",
     description: "Players step into the role of Miles Morales as he learns to become his own Spider-Man"
+  },
+];
+export const gameCompanies: GameCompany[] = [
+  {
+    gameId: 1,
+    companyName: "Naughty Dog",
+    founder: "Andy Gavin",
+    companyDescription: "Renowned for creating cinematic action-adventure games",
+  },
+  {
+    gameId: 2,
+    companyName: "Rockstar Games",
+    founder: "Sam Houser",
+    companyDescription: "Famous for open-world titles",
+  },
+  {
+    gameId: 3,
+    companyName: "Guerrilla Games",
+    founder: "Arjan Brussee",
+    companyDescription: "Dutch studio known for its unique blend of action and role-playing",
+  },
+  {
+    gameId: 4,
+    companyName: "Sucker Punch Productions",
+    founder: "Brian Fleming",
+    companyDescription: "Seattle-based studio specializing in action games",
+  },
+  {
+    gameId: 5,
+    companyName: "FromSoftware",
+    founder: "Naotoshi Zin",
+    companyDescription: "Dark fantasy games with deep lore and open-world exploration",
+  },
+  {
+    gameId: 6,
+    companyName: "Insomniac Games",
+    founder: "Ted Price",
+    companyDescription: "Insomniac has set a high standard for action games and storytelling",
   },
 ];

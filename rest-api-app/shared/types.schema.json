@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Game": {
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "release_date": {
+                    "type": "string"
+                },
+                "genre": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "title",
+                "release_date",
+                "genre",
+                "description"
+            ],
+            "type": "object"
+        }
+    }
+}

@@ -7,7 +7,8 @@ import { Construct } from "constructs";
 import * as apig from "aws-cdk-lib/aws-apigateway";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { generateBatch } from "../shared/util";
-import { games } from "../seed/games";
+import { games, gameCompanies } from "../seed/games";
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class RestAPIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -21,7 +22,18 @@ export class RestAPIStack extends cdk.Stack {
       tableName: "Games",
     });
 
+    const gameCompanysTable = new dynamodb.Table(this, "GameCompanyTable", {
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "gameId", type: dynamodb.AttributeType.NUMBER },
+      sortKey: { name: "companyName", type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      tableName: "GameCompany",
+    });
 
+    gameCompanysTable.addLocalSecondaryIndex({
+      indexName: "founderIx",
+      sortKey: { name: "founder", type: dynamodb.AttributeType.STRING },
+    });
     // Functions 
     const getGameByIdFn = new lambdanode.NodejsFunction(
       this,
@@ -65,6 +77,50 @@ export class RestAPIStack extends cdk.Stack {
         REGION: "us-east-1",
       },
     });
+    const deleteGameFn = new lambdanode.NodejsFunction(this, "DeleteGameFN", {
+      architecture: lambda.Architecture.ARM_64,
+      runtime: lambda.Runtime.NODEJS_16_X,
+      entry: `${__dirname}/../lambdas/deleteGame.ts`,
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      environment: {
+        TABLE_NAME: gamesTable.tableName,
+        REGION: "us-east-1",
+      },
+    });
+    const editGameFn = new lambdanode.NodejsFunction(this, "EditGameFN", {
+      architecture: lambda.Architecture.ARM_64,
+      runtime: lambda.Runtime.NODEJS_16_X,
+      entry: `${__dirname}/../lambdas/editGame.ts`,
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      environment: {
+        TABLE_NAME: gamesTable.tableName,
+        REGION: "us-east-1",
+      },
+    });
+
+    const getGameCompaniesFn = new lambdanode.NodejsFunction(
+      this,
+      "GetGameCompanyFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_16_X,
+        entry: `${__dirname}/../lambdas/getGameCompany.ts`,
+        timeout: cdk.Duration.seconds(10),
+        memorySize: 128,
+        environment: {
+          TABLE_NAME: gameCompanysTable.tableName,
+          REGION: "us-east-1",
+        },
+      }
+    );
+
+    // const gameCompanyPolicy = new iam.PolicyStatement({
+    //   actions: ['dynamodb:Query'],
+    //   resources: [gameCompanysTable.tableArn],
+    // });
+    // getGameCompaniesFn.addToRolePolicy(gameCompanyPolicy);
 
     new custom.AwsCustomResource(this, "gamesddbInitData", {
       onCreate: {
@@ -73,17 +129,22 @@ export class RestAPIStack extends cdk.Stack {
         parameters: {
           RequestItems: {
             [gamesTable.tableName]: generateBatch(games),
+            [gameCompanysTable.tableName]: generateBatch(gameCompanies),  // Added
           },
         },
         physicalResourceId: custom.PhysicalResourceId.of("gamesddbInitData"),
       },
       policy: custom.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: [gamesTable.tableArn],
+        resources: [gamesTable.tableArn, gameCompanysTable.tableArn],
       }),
     });
+
     gamesTable.grantReadData(getGameByIdFn)
     gamesTable.grantReadData(getAllGamesFn)
     gamesTable.grantReadWriteData(newGameFn)
+    gamesTable.grantReadWriteData(deleteGameFn)
+    gamesTable.grantReadWriteData(editGameFn);
+    gameCompanysTable.grantReadData(getGameCompaniesFn);
 
     const api = new apig.RestApi(this, "RestAPI", {
       description: "demo api",
@@ -103,7 +164,7 @@ export class RestAPIStack extends cdk.Stack {
       "GET",
       new apig.LambdaIntegration(getAllGamesFn, { proxy: true })
     );
-    
+
     gamesEndpoint.addMethod(
       "POST",
       new apig.LambdaIntegration(newGameFn, { proxy: true })
@@ -112,6 +173,19 @@ export class RestAPIStack extends cdk.Stack {
     gameEndpoint.addMethod(
       "GET",
       new apig.LambdaIntegration(getGameByIdFn, { proxy: true })
+    );
+    gameEndpoint.addMethod(
+      "DELETE",
+      new apig.LambdaIntegration(deleteGameFn, { proxy: true })
+    );
+    gameEndpoint.addMethod(
+      "PUT",
+      new apig.LambdaIntegration(editGameFn, { proxy: true })
+    );
+    const gameCompanieEndpoint = gameEndpoint.addResource("companies");
+    gameCompanieEndpoint.addMethod(
+      "GET",
+      new apig.LambdaIntegration(getGameCompaniesFn, { proxy: true })
     );
   }
 }
