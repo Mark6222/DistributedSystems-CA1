@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "target": "ES2020",
     "module": "commonjs",
     "lib": [
@@ -29,6 +31,10 @@
     "cdk.out"
   ],
   "include": [
-    "shared/*.json"
+    "shared/*.json",
+    "bin/**/*.ts", 
+    "lib/**/*.ts",
+    "lambda/**/*.ts",
+    "shared/**/*.ts"
   ],
 }

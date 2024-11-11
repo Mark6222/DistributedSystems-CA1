@@ -6,13 +6,14 @@ import * as custom from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
 import * as apig from "aws-cdk-lib/aws-apigateway";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { generateBatch } from "../shared/util";
+import { generateBatch } from "../lambda/util";
 import { games, gameCompanies } from "../seed/games";
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class RestAPIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    const userPoolId = cdk.Fn.importValue("UserPoolId");
 
     // Tables 
     const gamesTable = new dynamodb.Table(this, "GamesTable", {
@@ -41,7 +42,7 @@ export class RestAPIStack extends cdk.Stack {
       {
         architecture: lambda.Architecture.ARM_64,
         runtime: lambda.Runtime.NODEJS_18_X,
-        entry: `${__dirname}/../lambdas/getGameById.ts`,
+        entry: `${__dirname}/../lambda/getGameById.ts`,
         timeout: cdk.Duration.seconds(10),
         memorySize: 128,
         environment: {
@@ -57,7 +58,7 @@ export class RestAPIStack extends cdk.Stack {
       {
         architecture: lambda.Architecture.ARM_64,
         runtime: lambda.Runtime.NODEJS_18_X,
-        entry: `${__dirname}/../lambdas/getAllGames.ts`,
+        entry: `${__dirname}/../lambda/getAllGames.ts`,
         timeout: cdk.Duration.seconds(10),
         memorySize: 128,
         environment: {
@@ -66,36 +67,40 @@ export class RestAPIStack extends cdk.Stack {
         },
       }
     );
+
     const newGameFn = new lambdanode.NodejsFunction(this, "AddGameFn", {
       architecture: lambda.Architecture.ARM_64,
       runtime: lambda.Runtime.NODEJS_16_X,
-      entry: `${__dirname}/../lambdas/addGame.ts`,
+      entry: `${__dirname}/../lambda/addGame.ts`,
       timeout: cdk.Duration.seconds(10),
       memorySize: 128,
       environment: {
         TABLE_NAME: gamesTable.tableName,
+        USER_POOL_ID: userPoolId,
         REGION: "us-east-1",
       },
     });
     const deleteGameFn = new lambdanode.NodejsFunction(this, "DeleteGameFN", {
       architecture: lambda.Architecture.ARM_64,
       runtime: lambda.Runtime.NODEJS_16_X,
-      entry: `${__dirname}/../lambdas/deleteGame.ts`,
+      entry: `${__dirname}/../lambda/deleteGame.ts`,
       timeout: cdk.Duration.seconds(10),
       memorySize: 128,
       environment: {
         TABLE_NAME: gamesTable.tableName,
+        USER_POOL_ID: userPoolId,
         REGION: "us-east-1",
       },
     });
     const editGameFn = new lambdanode.NodejsFunction(this, "EditGameFN", {
       architecture: lambda.Architecture.ARM_64,
       runtime: lambda.Runtime.NODEJS_16_X,
-      entry: `${__dirname}/../lambdas/editGame.ts`,
+      entry: `${__dirname}/../lambda/editGame.ts`,
       timeout: cdk.Duration.seconds(10),
       memorySize: 128,
       environment: {
         TABLE_NAME: gamesTable.tableName,
+        USER_POOL_ID: userPoolId,
         REGION: "us-east-1",
       },
     });
@@ -106,7 +111,7 @@ export class RestAPIStack extends cdk.Stack {
       {
         architecture: lambda.Architecture.ARM_64,
         runtime: lambda.Runtime.NODEJS_16_X,
-        entry: `${__dirname}/../lambdas/getGameCompany.ts`,
+        entry: `${__dirname}/../lambda/getGameCompany.ts`,
         timeout: cdk.Duration.seconds(10),
         memorySize: 128,
         environment: {

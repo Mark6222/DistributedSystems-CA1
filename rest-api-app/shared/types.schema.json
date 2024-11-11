@@ -1,33 +1,128 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
+        "ConfirmSignUpBody": {
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "code",
+                "username"
+            ],
+            "type": "object"
+        },
         "Game": {
             "additionalProperties": false,
             "properties": {
-                "id": {
-                    "type": "number"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "release_date": {
+                "description": {
                     "type": "string"
                 },
                 "genre": {
                     "type": "string"
                 },
-                "description": {
+                "id": {
+                    "type": "number"
+                },
+                "releaseYear": {
+                    "type": "number"
+                },
+                "title": {
                     "type": "string"
                 }
             },
             "required": [
-                "id",
-                "title",
-                "release_date",
+                "description",
                 "genre",
-                "description"
+                "id",
+                "releaseYear",
+                "title"
+            ],
+            "type": "object"
+        },
+        "GameCompany": {
+            "additionalProperties": false,
+            "properties": {
+                "companyDescription": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "founder": {
+                    "type": "string"
+                },
+                "gameId": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "companyDescription",
+                "companyName",
+                "founder",
+                "gameId"
+            ],
+            "type": "object"
+        },
+        "GameCompanyQueryParams": {
+            "additionalProperties": false,
+            "properties": {
+                "companyName": {
+                    "type": "string"
+                },
+                "founder": {
+                    "type": "string"
+                },
+                "gameId": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "gameId"
+            ],
+            "type": "object"
+        },
+        "SignInBody": {
+            "additionalProperties": false,
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "password",
+                "username"
+            ],
+            "type": "object"
+        },
+        "SignUpBody": {
+            "additionalProperties": false,
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "email",
+                "password",
+                "username"
             ],
             "type": "object"
         }
     }
 }
+
