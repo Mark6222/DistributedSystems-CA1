@@ -27,6 +27,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       process.env.USER_POOL_ID,
       process.env.REGION!
     );
+
     console.log(JSON.stringify(verifiedJwt));
     if (!verifiedJwt) {
       return {
@@ -64,27 +65,27 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
         body: JSON.stringify({ Message: "Missing game Id" }),
       };
     }
-
+    console.log("Game ID:", gameId);
     const updateCommandOutput = await ddbDocClient.send(
-        new UpdateCommand({
-          TableName: process.env.TABLE_NAME,
-          Key: { id },
-          UpdateExpression: "set #title = :title, #releaseYear = :releaseYear, #genre = :genre, #description = :description",
-          ExpressionAttributeNames: {
-            "#title": "title",
-            "#releaseYear": "releaseYear",
-            "#genre": "genre",
-            "#description": "description"
-          },
-          ExpressionAttributeValues: {
-            ":title": title,
-            ":releaseYear": releaseYear,
-            ":genre": genre,
-            ":description": description
-          },
-          ReturnValues: "ALL_NEW",
-        })
-      );
+      new UpdateCommand({
+        TableName: process.env.TABLE_NAME,
+        Key: { id },
+        UpdateExpression: "set #title = :title, #releaseYear = :releaseYear, #genre = :genre, #description = :description",
+        ExpressionAttributeNames: {
+          "#title": "title",
+          "#releaseYear": "releaseYear",
+          "#genre": "genre",
+          "#description": "description"
+        },
+        ExpressionAttributeValues: {
+          ":title": title,
+          ":releaseYear": releaseYear,
+          ":genre": genre,
+          ":description": description
+        },
+        ReturnValues: "ALL_NEW",
+      })
+    );
     // Return Response
     return {
       statusCode: 200,

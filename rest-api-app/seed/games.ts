@@ -49,7 +49,7 @@ export const gameCompanies: GameCompany[] = [
   {
     gameId: 1,
     companyName: "Naughty Dog",
-    founder: "Andy Gavin",
+    founder: "Andy",
     companyDescription: "Renowned for creating cinematic action-adventure games",
   },
   {

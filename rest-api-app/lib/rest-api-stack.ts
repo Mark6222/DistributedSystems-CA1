@@ -121,12 +121,6 @@ export class RestAPIStack extends cdk.Stack {
       }
     );
 
-    // const gameCompanyPolicy = new iam.PolicyStatement({
-    //   actions: ['dynamodb:Query'],
-    //   resources: [gameCompanysTable.tableArn],
-    // });
-    // getGameCompaniesFn.addToRolePolicy(gameCompanyPolicy);
-
     new custom.AwsCustomResource(this, "gamesddbInitData", {
       onCreate: {
         service: "DynamoDB",
@@ -134,7 +128,7 @@ export class RestAPIStack extends cdk.Stack {
         parameters: {
           RequestItems: {
             [gamesTable.tableName]: generateBatch(games),
-            [gameCompanysTable.tableName]: generateBatch(gameCompanies),  // Added
+            [gameCompanysTable.tableName]: generateBatch(gameCompanies),
           },
         },
         physicalResourceId: custom.PhysicalResourceId.of("gamesddbInitData"),
@@ -174,6 +168,11 @@ export class RestAPIStack extends cdk.Stack {
       "POST",
       new apig.LambdaIntegration(newGameFn, { proxy: true })
     );
+    const gameCompanieEndpoint = gamesEndpoint.addResource("companies");
+    gameCompanieEndpoint.addMethod(
+      "GET",
+      new apig.LambdaIntegration(getGameCompaniesFn, { proxy: true })
+    );
     const gameEndpoint = gamesEndpoint.addResource("{gameId}");
     gameEndpoint.addMethod(
       "GET",
@@ -186,11 +185,6 @@ export class RestAPIStack extends cdk.Stack {
     gameEndpoint.addMethod(
       "PUT",
       new apig.LambdaIntegration(editGameFn, { proxy: true })
-    );
-    const gameCompanieEndpoint = gameEndpoint.addResource("companies");
-    gameCompanieEndpoint.addMethod(
-      "GET",
-      new apig.LambdaIntegration(getGameCompaniesFn, { proxy: true })
     );
   }
 }
